@@ -7,171 +7,171 @@ using System;
 
 namespace ImageSharp.Processing.AutoCrop
 {
-    public class AutoCropProcessor : CloningImageProcessor
-    {
-        private readonly IAutoCropSettings _settings;
+	public class AutoCropProcessor : CloningImageProcessor
+	{
+		private readonly IAutoCropSettings _settings;
 
-        public ICropAnalysis CropAnalysis { get; internal set; }
-        public IWeightAnalysis WeightAnalysis { get; internal set; }
+		public ICropAnalysis CropAnalysis { get; internal set; }
+		public IWeightAnalysis WeightAnalysis { get; internal set; }
 
-        public AutoCropProcessor(IAutoCropSettings settings)
-        {
-            _settings = settings;
-        }
+		public AutoCropProcessor(IAutoCropSettings settings)
+		{
+			_settings = settings;
+		}
 
-        public override ICloningImageProcessor<TPixel> CreatePixelSpecificCloningProcessor<TPixel>(Configuration configuration, Image<TPixel> source, Rectangle sourceRectangle)
-        {
-            if (source is Image<Rgb24> rgbSource)
-            {
-                var processor = new RgbAutoCropProcessor(configuration, _settings, rgbSource);
+		public override ICloningImageProcessor<TPixel> CreatePixelSpecificCloningProcessor<TPixel>(Configuration configuration, Image<TPixel> source, Rectangle sourceRectangle)
+		{
+			if (source is Image<Rgb24> rgbSource)
+			{
+				var processor = new RgbAutoCropProcessor(configuration, _settings, rgbSource);
 
-                CropAnalysis = processor.CropAnalysis;
-                WeightAnalysis = processor.WeightAnalysis;
+				CropAnalysis = processor.CropAnalysis;
+				WeightAnalysis = processor.WeightAnalysis;
 
-                return processor as ICloningImageProcessor<TPixel>;
-            }
-            else if (source is Image<Rgba32> rgbaSource)
-            {
-                var processor = new RgbaAutoCropProcessor(configuration, _settings, rgbaSource);
+				return processor as ICloningImageProcessor<TPixel>;
+			}
+			else if (source is Image<Rgba32> rgbaSource)
+			{
+				var processor = new RgbaAutoCropProcessor(configuration, _settings, rgbaSource);
 
-                CropAnalysis = processor.CropAnalysis;
-                WeightAnalysis = processor.WeightAnalysis;
+				CropAnalysis = processor.CropAnalysis;
+				WeightAnalysis = processor.WeightAnalysis;
 
-                return processor as ICloningImageProcessor<TPixel>;
-            }
+				return processor as ICloningImageProcessor<TPixel>;
+			}
 
-            throw new NotSupportedException("Unsupported pixel type");
-        }
-    }
+			throw new NotSupportedException("Unsupported pixel type");
+		}
+	}
 
-    public abstract class AutoCropProcessor<TPixel> : ICloningImageProcessor<TPixel> where TPixel : unmanaged, IPixel<TPixel>
-    {
-        protected readonly Configuration Configuration;
-        protected readonly IAutoCropSettings Settings;
-        protected readonly Image<TPixel> Source;
-        
-        public ICropAnalysis CropAnalysis { get; set; }
-        public IWeightAnalysis WeightAnalysis { get; set; }
+	public abstract class AutoCropProcessor<TPixel> : ICloningImageProcessor<TPixel> where TPixel : unmanaged, IPixel<TPixel>
+	{
+		protected readonly Configuration Configuration;
+		protected readonly IAutoCropSettings Settings;
+		protected readonly Image<TPixel> Source;
 
-        protected AutoCropProcessor(Configuration configuration, IAutoCropSettings settings, Image<TPixel> source)
-        {
-            Configuration = configuration;
-            Source = source;
-            Settings = settings;
-        }
+		public ICropAnalysis CropAnalysis { get; set; }
+		public IWeightAnalysis WeightAnalysis { get; set; }
 
-        public Image<TPixel> CloneAndExecute()
-        {
-            if (!CropAnalysis.Success)
-                return null;
+		protected AutoCropProcessor(Configuration configuration, IAutoCropSettings settings, Image<TPixel> source)
+		{
+			Configuration = configuration;
+			Source = source;
+			Settings = settings;
+		}
 
-            try
-            {
-                var target = CreateTarget();
-                ApplySource(target);
+		public Image<TPixel> CloneAndExecute()
+		{
+			if (!CropAnalysis.Success)
+				return null;
 
-                return target;
-            }
-            catch (Exception innerException)
-            {
-                throw new ImageProcessingException($"An error occurred when processing the image using {GetType().Name}. See the inner exception for more detail.", innerException);
-            }
-        }
+			try
+			{
+				var target = CreateTarget();
+				ApplySource(target);
 
-        public void Execute()
-        {
-            Image<TPixel> image = null;
-            try
-            {
-                image = CloneAndExecute();
-                
-                if (image != null)
-                    Source.SwapPixelBuffersFrom(image);
-            }
-            finally
-            {
-                image?.Dispose();
-            }
-        }
+				return target;
+			}
+			catch (Exception innerException)
+			{
+				throw new ImageProcessingException($"An error occurred when processing the image using {GetType().Name}. See the inner exception for more detail.", innerException);
+			}
+		}
 
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
+		public void Execute()
+		{
+			Image<TPixel> image = null;
+			try
+			{
+				image = CloneAndExecute();
 
-        protected virtual void Dispose(bool disposing)
-        {
+				if (image != null)
+					Source.SwapPixelBuffersFrom(image);
+			}
+			finally
+			{
+				image?.Dispose();
+			}
+		}
 
-        }
+		public void Dispose()
+		{
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
+		}
 
-        protected virtual void ApplySource(Image<TPixel> image)
-        {
-            var paddedSource = GetTargetRectangle();
-            var targetBox = paddedSource.Bounds();
+		protected virtual void Dispose(bool disposing)
+		{
 
-            // Copy as much of the source image as possible.
-            // Mainly to avoid jagged edges
-            
-            var offset = GetOffset(paddedSource, targetBox);
-            var constrainedSource = paddedSource.Constrain(Source.Bounds());
+		}
 
-            image.CopyRect(Source, constrainedSource, offset);
-        }
+		protected virtual void ApplySource(Image<TPixel> image)
+		{
+			var paddedSource = GetTargetRectangle();
+			var targetBox = paddedSource.Bounds();
 
-        protected virtual Size GetDestinationSize()
-        {
-            var paddedSource = GetTargetRectangle();
-            return paddedSource.Size();
-        }
+			// Copy as much of the source image as possible.
+			// Mainly to avoid jagged edges
 
-        protected virtual Rectangle GetTargetRectangle()
-        {
-            var paddingConstraint = (Rectangle?)null;
+			var offset = GetOffset(paddedSource, targetBox);
+			var constrainedSource = paddedSource.Constrain(Source.Bounds);
 
-            if (Settings.PadMode == PadMode.Contain)
-                paddingConstraint = Source.Bounds();
+			image.CopyRect(Source, constrainedSource, offset);
+		}
 
-            return GetPaddedRectangle(CropAnalysis.BoundingBox, paddingConstraint);
-        }
+		protected virtual Size GetDestinationSize()
+		{
+			var paddedSource = GetTargetRectangle();
+			return paddedSource.Size();
+		}
 
-        protected virtual Point GetOffset(Rectangle source, Rectangle target)
-        {
-            var x = target.Left - source.Left;
-            var y = target.Top - source.Top;
+		protected virtual Rectangle GetTargetRectangle()
+		{
+			var paddingConstraint = (Rectangle?)null;
 
-            return new Point(x, y);
-        }
+			if (Settings.PadMode == PadMode.Contain)
+				paddingConstraint = Source.Bounds;
 
-        protected virtual Rectangle GetPaddedRectangle(Rectangle rectangle, Rectangle? constraint = null)
-        {
-            var padding = GetPadSize(rectangle);
-            var weight = WeightAnalysis?.Weight ?? new PointF(0, 0);
+			return GetPaddedRectangle(CropAnalysis.BoundingBox, paddingConstraint);
+		}
 
-            var expanded = rectangle.Expand(padding.Width, padding.Height, weight);
+		protected virtual Point GetOffset(Rectangle source, Rectangle target)
+		{
+			var x = target.Left - source.Left;
+			var y = target.Top - source.Top;
 
-            if (constraint.HasValue)
-                expanded = expanded.Constrain(constraint.Value);
+			return new Point(x, y);
+		}
 
-            return expanded;
-        }
+		protected virtual Rectangle GetPaddedRectangle(Rectangle rectangle, Rectangle? constraint = null)
+		{
+			var padding = GetPadSize(rectangle);
+			var weight = WeightAnalysis?.Weight ?? new PointF(0, 0);
 
-        protected virtual Size GetPadSize(Rectangle rectangle)
-        {
-            var dimension = (rectangle.Width + rectangle.Height) / 2;
+			var expanded = rectangle.Expand(padding.Width, padding.Height, weight);
 
-            var px = Settings.PadX / 100.0;
-            var py = Settings.PadY / 100.0;
+			if (constraint.HasValue)
+				expanded = expanded.Constrain(constraint.Value);
 
-            return new Size((int)(dimension * px), (int)(dimension * py));
-        }
+			return expanded;
+		}
 
-        private Image<TPixel> CreateTarget()
-        {
-            var destinationSize = GetDestinationSize();
-            var background = CropAnalysis.Background.ToPixel<TPixel>();
+		protected virtual Size GetPadSize(Rectangle rectangle)
+		{
+			var dimension = (rectangle.Width + rectangle.Height) / 2;
 
-            return new Image<TPixel>(Configuration, destinationSize.Width, destinationSize.Height, background);
-        }
-    }
+			var px = Settings.PadX / 100.0;
+			var py = Settings.PadY / 100.0;
+
+			return new Size((int)(dimension * px), (int)(dimension * py));
+		}
+
+		private Image<TPixel> CreateTarget()
+		{
+			var destinationSize = GetDestinationSize();
+			var background = CropAnalysis.Background.ToPixel<TPixel>();
+
+			return new Image<TPixel>(Configuration, destinationSize.Width, destinationSize.Height, background);
+		}
+	}
 }

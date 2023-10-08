@@ -1,33 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>net6.0;net5.0;netcoreapp3.1</TargetFrameworks>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>svenrog</Authors>
-    <Company>Geta AS</Company>
-    <Product>ImageSharp.Web.AutoCrop</Product>
-    <Description>Automatic cropping for images with a flat background.
-Works with SixLabors.ImageSharp 1.0.1 and above.</Description>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <RepositoryUrl>https://github.com/svenrog/ImageSharp.Processing.AutoCrop</RepositoryUrl>
-    <RepositoryType>GitHub</RepositoryType>
-    <Copyright>Copyright 2021 Geta AS</Copyright>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>net6.0</TargetFrameworks>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Authors>svenrog</Authors>
+		<Company>Geta AS</Company>
+		<Product>ImageSharp.Web.AutoCrop</Product>
+		<Description>
+			Automatic cropping for images with a flat background.
+			Works with SixLabors.ImageSharp 1.0.1 and above.
+		</Description>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<RepositoryUrl>https://github.com/svenrog/ImageSharp.Processing.AutoCrop</RepositoryUrl>
+		<RepositoryType>GitHub</RepositoryType>
+		<Copyright>Copyright 2021 Geta AS</Copyright>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp" Version="[2.1.1, 3.0.0)" />
-    <PackageReference Include="SixLabors.ImageSharp.Web" Version="[2.0.0, 3.0.0)" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.0.2" />
+		<PackageReference Include="SixLabors.ImageSharp.Web" Version="3.0.1" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ImageSharp.Processing.AutoCrop\ImageSharp.Processing.AutoCrop.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\ImageSharp.Processing.AutoCrop\ImageSharp.Processing.AutoCrop.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
 
 </Project>
